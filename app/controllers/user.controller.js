@@ -10,14 +10,14 @@ exports.getSignUp = function(req, res){
   return res.render('signup', {title: 'SignUp'});
 },
 
-exports.signUp = function(req, res, next) {
+exports.signUp = function (req, res, next) {
 	var name = req.body.name;
 	var email = req.body.email;
 	var username = req.body.username;
 	var password = req.body.password;
 	var password2 = req.body.password2;
 
-	if(req.file){
+	if (req.file) {
 		console.log('Uploading File...');
 		var profileimage = req.file.filename;
 	} else {
@@ -30,45 +30,53 @@ exports.signUp = function(req, res, next) {
 	req.checkBody('email', 'Email field is required').notEmpty();
 	req.checkBody('email', 'Email is not valid').isEmail();
 	req.checkBody('username', 'Username field is required').notEmpty();
-	req.checkBody('password','Password field is required').notEmpty();
+	req.checkBody('password', 'Password field is required').notEmpty();
 	req.checkBody('password2', 'Passwords do not match').equals(req.body.password);
 
 	// Check Errors
 	var errors = req.validationErrors();
-  console.log(errors);
+	console.log(errors);
 
-    if(user){
-      return done(null, false, req.flash('error', 'User with email already exists'));
+	User.findOne({
+		'email': email
+	}, (err, user) => {
+		if (err) {
+			throw err;
+		}
+
+		if (user) {
+      res.render('signup',
+      {message: req.flash('alert-danger', 'Email or Username already taken.')});
+		} else if (errors) {
+      res.render('signup',
+      {message: req.flash('alert-danger', 'Please fill out all of the information')});
+		} else {
+			console.log('No Errors');
+			var newUser = new User({
+				name: name,
+				email: email,
+				username: username,
+				password: password,
+				profileimage: profileimage,
+				secretToken: "",
+				active: false,
+				age: "",
+				height: "",
+				politics: "",
+				social: ""
+			});
+      User.createUser(newUser, function(err, user){
+					if(err) throw err;
+					console.log(user);
+				});
+
+			req.flash('success', 'You are now registered and can login');
+
+			res.location('/');
+			res.redirect('/');
     }
-
-  	if(errors){
-  		res.render('signup',
-      {message: req.flash('alert-danger', 'Please fill out all of the information.')});
-  	}	else{
-  		console.log('No Errors');
-  		var newUser = new User({
-  			name: name,
-  			email: email,
-  			username: username,
-  			password: password,
-  			profileimage: profileimage,
-  			secretToken: "",
-  			active: false,
-  			age: "",
-  			height: "",
-  			politics: "",
-  			social: ""
-  		});
-
-      User.createUser(newUser, function(error, user){
-        if(error) {
-  				res.render('signup',
-  				{message: req.flash('alert-danger', 'Email or Username already taken')});
-  			} else {
-  				res.render('index', {message: req.flash('success', 'You are now registered and can login')});
-  		}});
-  		}
-  	};
+	});
+};
 
 exports.getLogin = function(req, res, next) {
     res.render('login', {title:'Login'});

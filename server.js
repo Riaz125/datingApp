@@ -8,7 +8,6 @@ const flash = require('connect-flash');
 const session = require('express-session');
 const MongoStore = require('connect-mongo')(session);
 const passport = require('passport');
-
 // create express app
 const app = express();
 

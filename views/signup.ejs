@@ -24,9 +24,7 @@
       </div>
     </div>
 		<h2 class="header">Register</h2>
-      <div class="error">
-        <p><%= message %></p>
-      </div>
+          <%- messages() %>
 			<p>Please fill out the form below.</p>
 			<form method="post" action="/signup" enctype="multipart/form-data">
 			  <div class="form-group">
